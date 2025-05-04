@@ -1,0 +1,14 @@
+{
+    "id": 6,
+    "name": "File Analysis",
+    "description": "Download this file and use forensic tools to analyze its metadata and find hidden content.",
+    "challenge_description": "Digital forensics involves investigating and analyzing digital data to uncover hidden information.",
+    "hint": "Have a read of our tools doc to find the correct file analysis tool.",
+    "resources": [
+        { "name": "Forensic File", "url": "/challenges/forensic_file.pdf" }
+    ],
+    "flag": "VUW{forensic_metadata}",
+    "points": 45,
+    "difficulty": "Intermediate",
+    "category": "Forensics"
+} 

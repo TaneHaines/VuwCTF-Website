@@ -1,0 +1,15 @@
+{
+    "id": 10,
+    "name": "Buffer Overflow 101",
+    "description": "Exploit this simple C program by overflowing its buffer to gain unauthorized access.",
+    "challenge_description": "Buffer overflow is a vulnerability that occurs when a program writes more data to a buffer than it can hold.",
+    "hint": "Look for unchecked buffer sizes in the code. The gets() function in C is known to be vulnerable to buffer overflows because it doesn't check the input length.",
+    "resources": [
+        { "name": "Source Code", "url": "/challenges/buffer_overflow.c" },
+        { "name": "Binary", "url": "/challenges/buffer_overflow" }
+    ],
+    "flag": "VUW{buffer_overflow_detected}",
+    "points": 80,
+    "difficulty": "Advanced",
+    "category": "Binary"
+} 

@@ -1,0 +1,287 @@
+<!-- Profile Hero Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2 text-center">
+                <h1>My Profile</h1>
+                <p class="lead">View your stats and manage your account</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Profile Tabs Section -->
+<section class="container py-5">
+    <!-- Flash Messages -->
+    <% if(success_msg != ''){ %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= success_msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    
+    <% if(error_msg != ''){ %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= error_msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab" aria-controls="stats" aria-selected="true">
+                <i class="bi bi-graph-up me-2"></i>Stats
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">
+                <i class="bi bi-gear me-2"></i>Account Settings
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Tab content -->
+    <div class="tab-content">
+        <!-- Stats Tab -->
+        <div class="tab-pane fade show active" id="stats" role="tabpanel" aria-labelledby="stats-tab">
+            <div class="row">
+                <!-- User Profile Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <div class="display-1 text-muted">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                            </div>
+                            <h5 class="card-title mb-1"><%= user.username %></h5>
+                            <p class="text-muted mb-3"><%= user.email %></p>
+                            
+                            <div class="d-flex justify-content-center mb-3">
+                                <div class="badge bg-primary fs-6 px-3 py-2">
+                                    <i class="bi bi-trophy me-1"></i>
+                                    <span><%= user.points || 0 %> points</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Rank information -->
+                            <p class="mb-0">
+                                <% if (userRank) { %>
+                                    <strong>Rank: </strong> #<%= userRank %> of <%= totalUsers %>
+                                <% } else { %>
+                                    <span class="text-muted">Not yet ranked</span>
+                                <% } %>
+                            </p>
+                            
+                            <hr>
+                            
+                            <div class="text-start">
+                                <p class="mb-1"><strong>Member since:</strong> <%= new Date(user.created_at || Date.now()).toLocaleDateString() %></p>
+                                <p class="mb-0"><strong>Last login:</strong> <%= new Date(user.last_login || Date.now()).toLocaleDateString() %></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Challenge Progress -->
+                <div class="col-md-8 mb-4">
+                    <!-- Challenge Stats -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Challenge Progress</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-sm-4">
+                                    <div class="border rounded p-3 text-center h-100">
+                                        <div class="display-4"><%= user.solved || 0 %></div>
+                                        <div class="text-muted">Challenges Solved</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="border rounded p-3 text-center h-100">
+                                        <div class="display-4"><%= Math.round((user.solved || 0) / totalChallenges * 100) || 0 %>%</div>
+                                        <div class="text-muted">Completion Rate</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="border rounded p-3 text-center h-100">
+                                        <div class="display-4"><%= userStreak || 0 %></div>
+                                        <div class="text-muted">Day Streak</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Category Progress -->
+                    <div class="card shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Skills Breakdown</h5>
+                        </div>
+                        <div class="card-body">
+                            <% if (categoryStats && Object.keys(categoryStats).length > 0) { %>
+                                <% for (const category in categoryStats) { %>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span><%= category %></span>
+                                            <span><%= categoryStats[category].solved %>/<%= categoryStats[category].total %> (<%= Math.round(categoryStats[category].solved / categoryStats[category].total * 100) %>%)</span>
+                                        </div>
+                                        <div class="progress" style="height: 10px;">
+                                            <div class="progress-bar bg-<%= getBadgeColor(category) %>" role="progressbar" 
+                                                style="width: <%= Math.round(categoryStats[category].solved / categoryStats[category].total * 100) %>%" 
+                                                aria-valuenow="<%= Math.round(categoryStats[category].solved / categoryStats[category].total * 100) %>" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            <% } else { %>
+                                <div class="text-center py-4">
+                                    <p class="text-muted mb-0">No challenge data available yet.</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recently Solved Challenges -->
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Recently Solved Challenges</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <% if (recentlySolved && recentlySolved.length > 0) { %>
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col">Challenge</th>
+                                                <th scope="col">Category</th>
+                                                <th scope="col" class="text-center">Points</th>
+                                                <th scope="col" class="text-end">Solved On</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% recentlySolved.forEach(challenge => { %>
+                                                <tr>
+                                                    <td><%= challenge.name %></td>
+                                                    <td>
+                                                        <span class="badge bg-<%= getBadgeColor(challenge.category) %> <%= challenge.category === 'Stego' ? 'text-dark' : '' %>">
+                                                            <%= challenge.category %>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-center"><%= challenge.points %></td>
+                                                    <td class="text-end"><%= new Date(challenge.solved_at).toLocaleString() %></td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } else { %>
+                                <div class="text-center py-4">
+                                    <p class="text-muted mb-0">You haven't solved any challenges yet.</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+            <div class="row">
+                <div class="col-md-8 offset-md-2">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Account Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="/profile/update" method="POST" class="needs-validation" novalidate>
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" value="<%= user.username %>" required>
+                                    <div class="form-text">Your username is visible to others on the scoreboard.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
+                                    <div class="form-text">Your email is not shared publicly.</div>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <h6 class="mb-3">Change Password</h6>
+                                <div class="mb-3">
+                                    <label for="current_password" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="current_password" name="current_password">
+                                    <div class="form-text">Leave blank if you don't want to change your password.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="new_password" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="new_password" name="new_password" minlength="6">
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">Danger Zone</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">Permanently delete your account and all associated data.</p>
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                <i class="bi bi-trash me-2"></i>Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAccountModalLabel">Confirm Account Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone. All your data, including challenge progress and points, will be permanently deleted.
+                </div>
+                <p>To confirm, please enter your password:</p>
+                <form id="deleteAccountForm" action="/profile/delete" method="POST">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="deleteAccountForm" class="btn btn-danger">Delete My Account</button>
+            </div>
+        </div>
+    </div>
+</div> 

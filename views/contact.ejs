@@ -1,0 +1,214 @@
+<!-- Contact Hero Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2 text-center">
+                <h1>Contact Us</h1>
+                <p class="lead">Get in touch with the Victoria University of Wellington CTF team</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form Section -->
+<section class="container py-5">
+    <div class="row">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <h2>Get In Touch</h2>
+            <p>Have questions about VUW CTF or interested in joining? Fill out the form and we'll get back to you as
+                soon as possible.</p>
+
+            <% if (message) { %>
+                <div class="alert alert-<%= message.type %> alert-dismissible fade show" role="alert">
+                    <%= message.text %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <% } %>
+
+                    <form action="/contact" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="invalid-feedback">
+                                Please provide your name.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid email address.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="" selected disabled>Select a subject</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="membership">Membership</option>
+                                <option value="event">Event Information</option>
+                                <option value="resources">Resources</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Please select a subject.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                            <div class="invalid-feedback">
+                                Please provide a message.
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter">
+                            <label class="form-check-label" for="newsletter">Subscribe to our newsletter</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+        </div>
+
+        <div class="col-lg-5 offset-lg-1">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Contact Information</h3>
+                    <p class="card-text">Feel free to reach out to us through any of these channels:</p>
+
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0 me-3">
+                            <i class="bi bi-envelope fs-4"></i>
+                        </div>
+                        <div>
+                            <h5>Email</h5>
+                            <p class="mb-0">vuwctf@gmail.com</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0 me-3">
+                            <i class="bi bi-discord fs-4"></i>
+                        </div>
+                        <div>
+                            <h5>Discord</h5>
+                            <p class="mb-0">Join our Discord server for discussions and announcements</p>
+                            <a href="https://discord.gg/jaKK2UXnbE" target="_blank"
+                                class="btn btn-sm btn-outline-primary mt-2">Join Discord</a>
+                        </div>
+                    </div>
+
+                    <div class="d-flex">
+                        <div class="flex-shrink-0 me-3">
+                            <i class="bi bi-geo-alt fs-4"></i>
+                        </div>
+                        <div>
+                            <h5>Location</h5>
+                            <p class="mb-0">Victoria University of Wellington<br>Kelburn, Wellington 6012<br>New Zealand
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Meeting Times</h3>
+                    <p class="card-text">We hold regular meetings during the academic year:</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Monthly Meetups:</strong> TBD</li>
+                        <li class="mb-2"><strong>Practice Sessions:</strong> Weekends(Competing in CTF Competitions)
+                        </li>
+                        <li><strong>Location:</strong> Discord: <a href="https://discord.gg/jaKK2UXnbE"
+                                target="_blank">Join Now!</a>
+                        </li>
+                    </ul>
+                    <p class="mb-0">New members are always welcome.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>Frequently Asked Questions</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Do I need prior experience to join VUW CTF?
+                        </button>
+                    </h3>
+                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                        data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>No prior experience is required! We welcome members of all skill levels, from beginners
+                                to advanced. Our community is focused on learning and growth, and we provide resources
+                                and support for members at every level.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Do I need to be a VUW student to join?
+                        </button>
+                    </h3>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+                        data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>While our primary focus is on VUW students, we welcome participants from other
+                                institutions and the broader community. Some events may be restricted to VUW students,
+                                but many are open to all.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <h3 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            How can I prepare for CTF competitions?
+                        </button>
+                    </h3>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
+                        data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            <p>The best way to prepare is to practice! Check out our Resources page for learning
+                                materials, practice platforms, and tools. Join us in some CTF Competitions on DISCORD,
+                                and our senior players will help guide you through your first few Challenges.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="container-fluid py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h2>Ready to Join?</h2>
+                <p class="lead mb-4">Visit us during one of our weekly meetings or reach out through the contact form
+                    above.</p>
+            </div>
+        </div>
+    </div>
+</section>

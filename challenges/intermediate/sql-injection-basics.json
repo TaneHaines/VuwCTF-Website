@@ -1,0 +1,14 @@
+{
+    "id": 5,
+    "name": "SQL Injection Basics",
+    "description": "This simple login form is vulnerable to SQL injection. Can you bypass the authentication?",
+    "challenge_description": "SQL injection is a code injection technique used to attack data-driven applications.",
+    "hint": "Try using the quote character (') to break the SQL syntax and consider common SQL injection payloads like ' OR 1=1 --.",
+    "resources": [
+        { "name": "SQL Injection Page", "url": "/challenges/sql-injection.html" }
+    ],
+    "flag": "VUW{sql_injection_basics}",
+    "points": 40,
+    "difficulty": "Intermediate",
+    "category": "Web"
+} 

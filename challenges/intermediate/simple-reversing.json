@@ -1,0 +1,14 @@
+{
+    "id": 8,
+    "name": "Simple Reversing",
+    "description": "Download this simple program and analyze its code to find the password that reveals the flag.",
+    "challenge_description": "Reverse engineering involves analyzing how a program works to understand its functionality.",
+    "hint": "Try reading the Python code to understand how it validates the input. Look for string operations or comparisons that might give away the password.",
+    "resources": [
+        { "name": "Python Program", "url": "/challenges/simple_reversing.py" }
+    ],
+    "flag": "VUW{reverse_engineering_101}",
+    "points": 50,
+    "difficulty": "Intermediate",
+    "category": "Reverse"
+} 

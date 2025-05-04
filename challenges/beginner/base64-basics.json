@@ -1,0 +1,14 @@
+{
+    "id": 2,
+    "name": "Base 64 Basics",
+    "description": "Decode this Base64 string to find the flag: VlVXe0I0UzNfNjRfMXNfbjB0X2VuY3J5cHQxMG59",
+    "challenge_description": "Learn about Base64 encoding and how to decode it to find hidden messages.",
+    "hint": "You can use online tools like base64decode.org to decode Base64 strings.",
+    "resources": [
+        { "name": "Base64 Decoder", "url": "https://www.base64decode.org/" }
+    ],
+    "flag": "VUW{B4S3_64_1s_n0t_encrypt10n}",
+    "points": 15,
+    "difficulty": "Beginner",
+    "category": "Crypto"
+} 

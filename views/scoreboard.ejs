@@ -1,0 +1,171 @@
+<!-- Scoreboard Hero Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2 text-center">
+                <h1>Scoreboard</h1>
+                <p class="lead">See how you rank against other members</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Scoreboard Section -->
+<section class="container py-5">
+    <!-- Top 3 Winners Highlight -->
+    <div class="row mb-5">
+        <% if (leaderboard.length > 0) { %>
+            
+        <% } else { %>
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    <h4><i class="bi bi-info-circle"></i> No scores yet!</h4>
+                    <p>Be the first to solve challenges and get on the scoreboard.</p>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Full Scoreboard Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Complete Rankings</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="text-center" style="width: 80px;">Rank</th>
+                                    <th scope="col">User</th>
+                                    <th scope="col" class="text-center">Challenges Solved</th>
+                                    <th scope="col" class="text-center">Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (leaderboard.length > 0) { %>
+                                    <% leaderboard.forEach((user, index) => { %>
+                                        <tr<%= user.id === currentUser?.id ? ' class="table-primary"' : '' %>>
+                                            <td class="text-center fw-bold"><%= index + 1 %></td>
+                                            <td>
+                                                <%= user.username %>
+                                                <% if (user.id === currentUser?.id) { %>
+                                                    <span class="badge bg-primary ms-2">You</span>
+                                                <% } %>
+                                            </td>
+                                            <td class="text-center"><%= user.solved || 0 %></td>
+                                            <td class="text-center fw-bold"><%= user.points %></td>
+                                        </tr>
+                                    <% }); %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="4" class="text-center p-4">
+                                            No scores recorded yet. Complete challenges to get on the scoreboard!
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories/Skills Breakdown -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Category Leaderboards</h5>
+                    <div class="btn-group" role="group">
+                        <% let isFirst = true; %>
+                        <% for (const category in categoryLeaderboards) { %>
+                            <button type="button" class="btn btn-outline-light btn-sm <%= isFirst ? 'active' : '' %>" 
+                                onclick="showCategoryTab('<%= category.toLowerCase() %>')">
+                                <%= category %>
+                            </button>
+                            <% isFirst = false; %>
+                        <% } %>
+                        
+                        <% if (Object.keys(categoryLeaderboards).length === 0) { %>
+                            <button type="button" class="btn btn-outline-light btn-sm active">No Categories</button>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <% if (Object.keys(categoryLeaderboards).length === 0) { %>
+                        <div class="text-center py-4">
+                            <i class="bi bi-exclamation-circle text-muted" style="font-size: 2.5rem;"></i>
+                            <p class="mt-3 mb-0 text-muted">No category data available yet.</p>
+                        </div>
+                    <% } else { %>
+                        <% isFirst = true; %>
+                        <% for (const category in categoryLeaderboards) { %>
+                            <div id="<%= category.toLowerCase() %>-tab" class="category-tab" <%= !isFirst ? 'style="display: none;"' : '' %>>
+                                <h6 class="mb-3">Top <%= category %> Experts</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col" style="width: 50px;">#</th>
+                                                <th scope="col">User</th>
+                                                <th scope="col" class="text-center">Solved</th>
+                                                <th scope="col" class="text-center">Points</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (categoryLeaderboards[category].length > 0) { %>
+                                                <% categoryLeaderboards[category].forEach((user, index) => { %>
+                                                    <tr<%= user.id === currentUser?.id ? ' class="table-primary"' : '' %>>
+                                                        <td><%= index + 1 %></td>
+                                                        <td>
+                                                            <%= user.username %>
+                                                            <% if (user.id === currentUser?.id) { %>
+                                                                <span class="badge bg-primary ms-2">You</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td class="text-center"><%= user.solved %>/<%= user.total %></td>
+                                                        <td class="text-center"><%= user.points %></td>
+                                                    </tr>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-3">No data available yet</td>
+                                                </tr>
+                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <% isFirst = false; %>
+                        <% } %>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- JavaScript for category tabs -->
+<script>
+    function showCategoryTab(category) {
+        // Hide all tabs
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.style.display = 'none';
+        });
+        
+        // Show selected tab
+        document.getElementById(category + '-tab').style.display = 'block';
+        
+        // Update active button
+        document.querySelectorAll('.btn-group .btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Set clicked button as active
+        event.target.classList.add('active');
+    }
+</script> 

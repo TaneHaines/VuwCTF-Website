@@ -1,0 +1,278 @@
+<!-- Challenges Hero Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2 text-center">
+                <h1>Practice Challenges</h1>
+                <p class="lead">Test your skills with these Capture The Flag challenges</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="container mt-4">
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Filter Challenges</h5>
+                </div>
+                <div class="card-body">
+                    <form id="filterForm">
+                        <!-- Category Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Categories</label>
+                            <div class="category-filters">
+                                <% filters.categories.forEach(category => { %>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                            name="categories" 
+                                            value="<%= category %>"
+                                            id="category-<%= category %>"
+                                            <%= filters.selectedCategories.includes(category) ? 'checked' : '' %>>
+                                        <label class="form-check-label" for="category-<%= category %>">
+                                            <%= category %>
+                                        </label>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
+
+                        <!-- Sort Options -->
+                        <div class="mb-3">
+                            <label class="form-label">Sort By</label>
+                            <select class="form-select" name="sortBy">
+                                <option value="difficulty" <%= filters.sortBy === 'difficulty' ? 'selected' : '' %>>Difficulty</option>
+                                <option value="points" <%= filters.sortBy === 'points' ? 'selected' : '' %>>Points</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Order</label>
+                            <select class="form-select" name="sortOrder">
+                                <option value="ASC" <%= filters.sortOrder === 'ASC' ? 'selected' : '' %>>Ascending</option>
+                                <option value="DESC" <%= filters.sortOrder === 'DESC' ? 'selected' : '' %>>Descending</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Challenges List -->
+        <div class="col-md-9">
+            <div class="row">
+                <% challenges.forEach(challenge => { %>
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100 <%= userData && userData.solvedChallenges && userData.solvedChallenges.includes(challenge.id) ? 'border-success' : '' %>">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>
+                                    <% if (userData && userData.solvedChallenges && userData.solvedChallenges.includes(challenge.id)) { %>
+                                        <span class="badge bg-success me-2">
+                                            <i class="bi bi-check-circle-fill"></i> Solved
+                                        </span>
+                                    <% } %>
+                                    <span class="badge bg-<%= getBadgeColor(challenge.category) %> <%= challenge.category === 'Stego' ? 'text-dark' : '' %> me-2">
+                                        <%= challenge.category %>
+                                    </span>
+                                    <span class="badge bg-<%= getDifficultyColor(challenge.difficulty) %> me-2">
+                                        <%= challenge.difficulty %>
+                                    </span>
+                                    <%= challenge.name %>
+                                </span>
+                                <span class="badge bg-primary">
+                                    <%= challenge.points %> points
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    <%= getChallengeDescription(challenge.id) %>
+                                </p>
+                                <p><strong>Description:</strong>
+                                    <%= challenge.description %>
+                                </p>
+                                <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                    data-bs-target="#challengeModal<%= challenge.id %>">Start Challenge</a>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+
+            <!-- Pagination -->
+            <% if (pagination.totalPages > 1) { %>
+                <nav aria-label="Challenge pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <% for(let i = 1; i <= pagination.totalPages; i++) { %>
+                            <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>&categories=<%= filters.selectedCategories.join(',') %>&sortBy=<%= filters.sortBy %>&sortOrder=<%= filters.sortOrder %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </nav>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<!-- Challenge Modals -->
+<% modalData.forEach(modal => { %>
+    <div class="modal fade" id="challengeModal<%= modal.id %>" tabindex="-1" aria-labelledby="challengeModalLabel<%= modal.id %>" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="challengeModalLabel<%= modal.id %>"><%= modal.name %></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-4">
+                                <h6>Challenge Description</h6>
+                                <p><%= modal.description %></p>
+                                
+                                <% if (modal.resources && modal.resources.length > 0) { %>
+                                    <div class="mb-3">
+                                        <% modal.resources.forEach(resource => { %>
+                                            <% if (resource.url.startsWith('http')) { %>
+                                                <a href="<%= resource.url %>" class="btn btn-primary me-2" target="_blank"><%= resource.name %></a>
+                                            <% } else { %>
+                                                <a href="<%= resource.url %>" class="btn btn-primary me-2" <%= resource.target ? 'target="' + resource.target + '"' : '' %>><%= resource.name %></a>
+                                            <% } %>
+                                        <% }); %>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <hr>
+
+                            <% if (authenticated) { %>
+                                <div class="mb-3">
+                                    <label for="flagInput<%= modal.id %>" class="form-label">Enter your flag:</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="flagInput<%= modal.id %>" placeholder="VUW{...}">
+                                        <button class="btn btn-primary" onclick="submitFlag(<%= modal.id %>, this)">Submit</button>
+                                    </div>
+                                </div>
+                            <% } else { %>
+                                <div class="alert alert-warning">
+                                    Please <a href="/login">log in</a> to submit flags and track your progress.
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<% }); %>
+
+<script>
+    // Handle filter form submission
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const params = new URLSearchParams();
+        
+        // Add selected categories
+        const categories = Array.from(formData.getAll('categories'));
+        if (categories.length > 0) {
+            params.append('categories', categories.join(','));
+        }
+        
+        // Add sort parameters
+        params.append('sortBy', formData.get('sortBy'));
+        params.append('sortOrder', formData.get('sortOrder'));
+        
+        // Redirect to filtered URL
+        window.location.href = '/challenges?' + params.toString();
+    });
+
+    function submitFlag(challengeId, buttonElement) {
+        // Get the input element (sibling of the button)
+        const inputElement = buttonElement.previousElementSibling;
+        const flag = inputElement.value.trim();
+
+        if (!flag) {
+            alert('Please enter a flag');
+            return;
+        }
+
+        // Disable button and input while submitting
+        buttonElement.disabled = true;
+        inputElement.disabled = true;
+        buttonElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
+
+        // Submit flag via AJAX
+        fetch('/submit-flag', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                challengeId: challengeId,
+                flag: flag
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Re-enable button and input
+                buttonElement.disabled = false;
+                inputElement.disabled = false;
+                buttonElement.textContent = 'Submit';
+
+                // Display result
+                const resultElement = document.createElement('div');
+                resultElement.className = data.success ? 'alert alert-success mt-3' : 'alert alert-danger mt-3';
+                resultElement.textContent = data.message;
+
+                // Add points info if successful
+                if (data.success && data.points) {
+                    const pointsInfo = document.createElement('p');
+                    pointsInfo.className = 'mt-2 mb-0';
+                    pointsInfo.innerHTML = `<strong>+${data.points} points!</strong> Total: ${data.totalPoints} points`;
+                    resultElement.appendChild(pointsInfo);
+                }
+
+                // Replace any existing result message or append new one
+                const existingResult = buttonElement.parentElement.nextElementSibling;
+                if (existingResult && existingResult.classList.contains('alert')) {
+                    existingResult.replaceWith(resultElement);
+                } else {
+                    buttonElement.parentElement.after(resultElement);
+                }
+
+                // If successful, update UI elements after a delay
+                if (data.success) {
+                    setTimeout(() => {
+                        // Reload the page to update progress
+                        window.location.reload();
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                buttonElement.disabled = false;
+                inputElement.disabled = false;
+                buttonElement.textContent = 'Submit';
+
+                // Display error message
+                const errorElement = document.createElement('div');
+                errorElement.className = 'alert alert-danger mt-3';
+                errorElement.textContent = 'An error occurred. Please try again.';
+
+                const existingError = buttonElement.parentElement.nextElementSibling;
+                if (existingError && existingError.classList.contains('alert')) {
+                    existingError.replaceWith(errorElement);
+                } else {
+                    buttonElement.parentElement.after(errorElement);
+                }
+            });
+    }
+</script>

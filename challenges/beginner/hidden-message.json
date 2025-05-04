@@ -1,0 +1,14 @@
+{
+    "id": 4,
+    "name": "Hidden Message",
+    "description": "Download this image and find the hidden message inside it. No special tools required, just careful observation.",
+    "challenge_description": "Steganography is the practice of hiding messages within ordinary, non-secret data or files.",
+    "hint": "Sometimes images can hide text in their metadata. Try looking at the image properties or use an online EXIF viewer.",
+    "resources": [
+        { "name": "Image File", "url": "/images/rick_astly.jpg" }
+    ],
+    "flag": "VUW{st3gn0_astly_h3r3_1_c0me}",
+    "points": 25,
+    "difficulty": "Beginner",
+    "category": "Stego"
+} 

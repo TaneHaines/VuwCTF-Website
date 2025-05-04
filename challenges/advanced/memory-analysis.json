@@ -1,0 +1,14 @@
+{
+    "id": 12,
+    "name": "Memory Analysis",
+    "description": "Analyze this memory dump to find evidence of malicious activity and recover the flag.",
+    "challenge_description": "Memory forensics involves analyzing the volatile memory (RAM) of a computer system to find evidence.",
+    "hint": "Look for suspicious processes and strings in memory. The flag might be hidden in a process's memory or in a Notepad text window. Try using Volatility commands like pslist, memdump, and strings.",
+    "resources": [
+        { "name": "Memory Dump", "url": "/challenges/memory_dump.raw" }
+    ],
+    "flag": "VUW{memory_forensics_master}",
+    "points": 90,
+    "difficulty": "Advanced",
+    "category": "Forensics"
+} 

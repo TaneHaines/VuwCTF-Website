@@ -1,0 +1,14 @@
+{
+    "id": 3,
+    "name": "Digital Footprint",
+    "description": "Find information about our club's GitHub repository that isn't on our website. What year was it created?",
+    "challenge_description": "Open Source Intelligence involves gathering information from publicly available sources.",
+    "hint": "We have a GitHub organization, check it out!",
+    "resources": [
+        { "name": "GitHub Organization", "url": "https://github.com/vuwctf" }
+    ],
+    "flag": "VUW{2025}",
+    "points": 20,
+    "difficulty": "Beginner",
+    "category": "OSINT"
+} 

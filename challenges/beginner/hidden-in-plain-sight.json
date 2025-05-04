@@ -1,0 +1,14 @@
+{
+    "id": 1,
+    "name": "Hidden in Plain Sight",
+    "description": "Check this simple webpage for hidden information. The flag is somewhere in the HTML.",
+    "challenge_description": "Sometimes the information you need is right in front of you, just not visible at first glance.",
+    "hint": "Try examining the CSS styles in the source code. Comments in CSS are denoted by /* and */.",
+    "resources": [
+        { "name": "Web Challenge", "url": "/challenges/web-hidden-flag.html", "target": "_blank" }
+    ],
+    "flag": "VUW{h1dd3n_1n_pl41n_s1ght}",
+    "points": 10,
+    "difficulty": "Beginner",
+    "category": "Web"
+} 

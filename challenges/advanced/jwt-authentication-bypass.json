@@ -1,0 +1,14 @@
+{
+    "id": 9,
+    "name": "JWT Authentication Bypass",
+    "description": "This web application uses JWT for authentication. Can you find a vulnerability in the implementation?",
+    "challenge_description": "JSON Web Tokens (JWT) are commonly used for authentication and information exchange.",
+    "hint": "Check the JWT signature algorithm. If it's using a vulnerable algorithm like \"none\" or \"HS256\" with a weak key, you might be able to forge tokens.",
+    "resources": [
+        { "name": "JWT Auth Page", "url": "/challenges/jwt-auth.html" }
+    ],
+    "flag": "VUW{jwt_alg_none}",
+    "points": 75,
+    "difficulty": "Advanced",
+    "category": "Web"
+} 

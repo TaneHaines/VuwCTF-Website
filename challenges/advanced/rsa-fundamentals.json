@@ -1,0 +1,15 @@
+{
+    "id": 11,
+    "name": "RSA Fundamentals",
+    "description": "You have the RSA public key and a ciphertext. Can you decrypt the message to find the flag?",
+    "challenge_description": "RSA is a public-key cryptosystem widely used for secure data transmission.",
+    "hint": "Check if the public key has small prime factors or a low exponent. Tools like RsaCtfTool might be helpful for this challenge.",
+    "resources": [
+        { "name": "Public Key", "url": "/challenges/public_key.pem" },
+        { "name": "Ciphertext", "url": "/challenges/ciphertext.txt" }
+    ],
+    "flag": "VUW{weak_rsa_params}",
+    "points": 85,
+    "difficulty": "Advanced",
+    "category": "Crypto"
+} 

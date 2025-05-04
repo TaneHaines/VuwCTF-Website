@@ -1,0 +1,110 @@
+<!-- Register Hero Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2 text-center">
+                <h1>Register</h1>
+                <p class="lead">Create an account to participate in challenges and track your progress</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Register Form Section -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <!-- Flash Messages -->
+            <% if(typeof errors != 'undefined'){ %>
+                <% errors.forEach(function(error) { %>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <%= error %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <% }); %>
+            <% } %>
+            
+            <% if(success_msg != ''){ %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <%= success_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+            
+            <% if(error_msg != ''){ %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+            
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">Create Account</h5>
+                    
+                    <form action="/register" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" value="<%= typeof username != 'undefined' ? username : '' %>" required>
+                            <div class="invalid-feedback">
+                                Please choose a username.
+                            </div>
+                            <div class="form-text">
+                                Username will be visible on the scoreboard.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="<%= typeof email != 'undefined' ? email : '' %>" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid email address.
+                            </div>
+                            <div class="form-text">
+                                We'll never share your email with anyone else.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                            <div class="invalid-feedback">
+                                Password must be at least 6 characters.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="password2" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="password2" name="password2" required>
+                            <div class="invalid-feedback">
+                                Passwords must match.
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="mb-0">Already have an account? <a href="/login">Login</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">Member Benefits</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-transparent"><i class="bi bi-trophy-fill text-warning me-2"></i> Compete in CTF competitions</li>
+                        <li class="list-group-item bg-transparent"><i class="bi bi-graph-up-arrow text-success me-2"></i> Track your progress and skills</li>
+                        <li class="list-group-item bg-transparent"><i class="bi bi-people-fill text-primary me-2"></i> Join a community of security enthusiasts</li>
+                        <li class="list-group-item bg-transparent"><i class="bi bi-calendar-event text-danger me-2"></i> Get notified about upcoming events</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
