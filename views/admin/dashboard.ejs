@@ -1,0 +1,187 @@
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Admin Dashboard</h1>
+            
+            <!-- Quick Stats -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Users</h5>
+                            <h2 class="card-text"><%= users.length %></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Active Users</h5>
+                            <h2 class="card-text"><%= users.filter(u => u.last_login).length %></h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Points</h5>
+                            <h2 class="card-text"><%= users.reduce((sum, user) => sum + (user.points || 0), 0) %></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <a href="/admin/users" class="btn btn-primary w-100">
+                                        <i class="bi bi-people"></i> Manage Users
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="/admin/challenges" class="btn btn-success w-100">
+                                        <i class="bi bi-trophy"></i> Manage Challenges
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="/admin/settings" class="btn btn-info w-100">
+                                        <i class="bi bi-gear"></i> System Settings
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="/" class="btn btn-secondary w-100">
+                                        <i class="bi bi-house"></i> View Site
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Recent Users</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Points</th>
+                                            <th>Last Login</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% users.slice(0, 5).forEach(user => { %>
+                                            <tr>
+                                                <td><%= user.username %></td>
+                                                <td><%= user.points || 0 %></td>
+                                                <td><%= user.last_login ? new Date(user.last_login).toLocaleString() : 'Never' %></td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Recent Challenges</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Points</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% challenges.slice(0, 5).forEach(challenge => { %>
+                                            <tr>
+                                                <td><%= challenge.name %></td>
+                                                <td>
+                                                    <span class="badge bg-<%= getBadgeColor(challenge.category) %>">
+                                                        <%= challenge.category %>
+                                                    </span>
+                                                </td>
+                                                <td><%= challenge.points %></td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">System Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <strong>Site Name:</strong>
+                                        <p><%= systemSettings.site_name %></p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <strong>Maintenance Mode:</strong>
+                                        <p>
+                                            <span class="badge bg-<%= systemSettings.maintenance_mode ? 'danger' : 'success' %>">
+                                                <%= systemSettings.maintenance_mode ? 'Enabled' : 'Disabled' %>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <strong>Registration:</strong>
+                                        <p>
+                                            <span class="badge bg-<%= systemSettings.registration_enabled ? 'success' : 'danger' %>">
+                                                <%= systemSettings.registration_enabled ? 'Enabled' : 'Disabled' %>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <strong>Max Points/Day:</strong>
+                                        <p><%= systemSettings.max_points_per_day %></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add any dashboard-specific JavaScript here
+</script>

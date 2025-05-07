@@ -23,7 +23,6 @@ function loadChallenges() {
                     const challengeData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
                     challenges.push({
                         ...challengeData,
-                        category: category.charAt(0).toUpperCase() + category.slice(1),
                         solved: []
                     });
                 }

@@ -1,0 +1,172 @@
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>User Management</h1>
+                <a href="/admin" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+
+            <!-- Users Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">All Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Points</th>
+                                    <th>Last Login</th>
+                                    <th>Admin</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% users.forEach(user => { %>
+                                    <tr>
+                                        <td><%= user.id %></td>
+                                        <td><%= user.username %></td>
+                                        <td><%= user.email %></td>
+                                        <td><%= user.points || 0 %></td>
+                                        <td><%= user.last_login ? new Date(user.last_login).toLocaleString() : 'Never' %></td>
+                                        <td>
+                                            <span class="badge bg-<%= user.isAdmin ? 'success' : 'secondary' %>">
+                                                <%= user.isAdmin ? 'Yes' : 'No' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <% if (!user.isAdmin) { %>
+                                                    <form action="/admin/users/<%= user.id %>/set-admin" method="POST" class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-success">
+                                                            <i class="bi bi-shield-check"></i> Make Admin
+                                                        </button>
+                                                    </form>
+                                                <% } else { %>
+                                                    <form action="/admin/users/<%= user.id %>/remove-admin" method="POST" class="d-inline">
+                                                        <button type="submit" class="btn btn-sm btn-warning">
+                                                            <i class="bi bi-shield-x"></i> Remove Admin
+                                                        </button>
+                                                    </form>
+                                                <% } %>
+                                                <button type="button" class="btn btn-sm btn-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#manageChallengesModal<%= user.id %>">
+                                                    <i class="bi bi-trophy"></i> Manage Challenges
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteUserModal<%= user.id %>">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            </div>
+
+                                            <!-- Manage Challenges Modal -->
+                                            <div class="modal fade" id="manageChallengesModal<%= user.id %>" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" style="pointer-events: auto;">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Manage Challenges for <%= user.username %></h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-hover">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Challenge</th>
+                                                                            <th>Category</th>
+                                                                            <th>Points</th>
+                                                                            <th>Status</th>
+                                                                            <th>Actions</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <% challenges.forEach(challenge => { 
+                                                                            const isSolved = user.solvedChallenges && user.solvedChallenges.some(sc => sc.id === challenge.id);
+                                                                        %>
+                                                                            <tr>
+                                                                                <td><%= challenge.name %></td>
+                                                                                <td>
+                                                                                    <span class="badge bg-<%= getBadgeColor(challenge.category) %>">
+                                                                                        <%= challenge.category %>
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td><%= challenge.points %></td>
+                                                                                <td>
+                                                                                    <% if (isSolved) { %>
+                                                                                        <span class="badge bg-success">Solved</span>
+                                                                                    <% } else { %>
+                                                                                        <span class="badge bg-secondary">Not Solved</span>
+                                                                                    <% } %>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <% if (isSolved) { %>
+                                                                                        <form action="/admin/users/<%= user.id %>/challenges/<%= challenge.id %>/remove" method="POST" class="d-inline">
+                                                                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                                                                <i class="bi bi-x-circle"></i> Remove
+                                                                                            </button>
+                                                                                        </form>
+                                                                                    <% } else { %>
+                                                                                        <form action="/admin/users/<%= user.id %>/challenges/<%= challenge.id %>/add" method="POST" class="d-inline">
+                                                                                            <button type="submit" class="btn btn-sm btn-success">
+                                                                                                <i class="bi bi-check-circle"></i> Add
+                                                                                            </button>
+                                                                                        </form>
+                                                                                    <% } %>
+                                                                                </td>
+                                                                            </tr>
+                                                                        <% }); %>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Delete User Modal -->
+                                            <div class="modal fade" id="deleteUserModal<%= user.id %>" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Delete User</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>Are you sure you want to delete user "<%= user.username %>"?</p>
+                                                            <p class="text-danger">This action cannot be undone.</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <form action="/admin/users/<%= user.id %>/delete" method="POST" class="d-inline">
+                                                                <button type="submit" class="btn btn-danger">Delete User</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add any users-specific JavaScript here
+</script>

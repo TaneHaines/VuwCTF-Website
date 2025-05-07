@@ -1,0 +1,92 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>System Settings</h1>
+                <a href="/admin" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">General Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form action="/admin/settings/update" method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="siteName" class="form-label">Site Name</label>
+                                    <input type="text" class="form-control" id="siteName" name="siteName" value="<%= settings.siteName %>" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="maxPointsPerDay" class="form-label">Maximum Points Per Day</label>
+                                    <input type="number" class="form-control" id="maxPointsPerDay" name="maxPointsPerDay" value="<%= settings.maxPointsPerDay %>" required>
+                                    <div class="form-text">Set to 0 for unlimited points per day</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="maintenanceMode" name="maintenanceMode" <%= settings.maintenanceMode ? 'checked' : '' %>>
+                                        <label class="form-check-label" for="maintenanceMode">Maintenance Mode</label>
+                                    </div>
+                                    <div class="form-text">When enabled, only administrators can access the site</div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="allowRegistration" name="allowRegistration" <%= settings.allowRegistration ? 'checked' : '' %>>
+                                        <label class="form-check-label" for="allowRegistration">Allow Registration</label>
+                                    </div>
+                                    <div class="form-text">When disabled, new users cannot register</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Save Settings</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Database Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> These actions are irreversible and may affect all users and challenges.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Reset Database</h6>
+                                    <p class="card-text">This will delete all users, challenges, and solve records. Only use this during initial setup or when you want to start fresh.</p>
+                                    <form action="/admin/settings/reset-db" method="POST" onsubmit="return confirm('Are you sure you want to reset the database? This will delete ALL data!');">
+                                        <button type="submit" class="btn btn-danger">Reset Database</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Export Database</h6>
+                                    <p class="card-text">Download a backup of the current database state.</p>
+                                    <a href="/admin/settings/export-db" class="btn btn-primary">Export Database</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

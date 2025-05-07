@@ -16,6 +16,8 @@ function initDatabase() {
                 email TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
                 points INTEGER DEFAULT 0,
+                isAdmin BOOLEAN DEFAULT 0,
+                isGuest BOOLEAN DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 last_login DATETIME
             )`);
@@ -62,7 +64,33 @@ function initDatabase() {
                     [challenge.id, challenge.name, challenge.description, challenge.flag, challenge.points, challenge.category]);
             });
 
-            resolve();
+            // Create guest account if it doesn't exist
+            db.get('SELECT COUNT(*) as count FROM users WHERE isGuest = 1', async (err, row) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                
+                if (row.count === 0) {
+                    try {
+                        const hashedPassword = await bcrypt.hash('guest123', 10);
+                        db.run(`INSERT INTO users (username, email, password, isGuest) 
+                                VALUES (?, ?, ?, ?)`,
+                            ['guest', 'guest@vuwctf.local', hashedPassword, 1],
+                            (err) => {
+                                if (err) {
+                                    reject(err);
+                                    return;
+                                }
+                                resolve();
+                            });
+                    } catch (error) {
+                        reject(error);
+                    }
+                } else {
+                    resolve();
+                }
+            });
         });
     });
 }
@@ -135,7 +163,7 @@ function getUserRank(userId) {
 }
 
 // Challenge functions
-function getChallenges(page = 1, perPage = 10, categories = [], sortBy = 'difficulty', sortOrder = 'ASC') {
+function getChallenges(page = 1, perPage = 10, categories = [], sortBy = 'points', sortOrder = 'ASC') {
     return new Promise((resolve, reject) => {
         let query = 'SELECT * FROM challenges';
         const params = [];
@@ -147,7 +175,7 @@ function getChallenges(page = 1, perPage = 10, categories = [], sortBy = 'diffic
         }
         
         // Add sorting
-        query += ` ORDER BY ${sortBy} ${sortOrder}, points ${sortOrder}`;
+        query += ` ORDER BY ${sortBy} ${sortOrder}`;
         
         // Add pagination
         const offset = (page - 1) * perPage;
@@ -339,6 +367,220 @@ function getUserStreak(userId) {
     });
 }
 
+// User solve management
+async function clearUserSolves(userId) {
+    return new Promise((resolve, reject) => {
+        db.run('DELETE FROM solved_challenges WHERE user_id = ?', [userId], (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+}
+
+// Challenge management
+function createChallenge(name, description, flag, points, category) {
+    return new Promise((resolve, reject) => {
+        db.run(`INSERT INTO challenges (name, description, flag, points, category) 
+                VALUES (?, ?, ?, ?, ?)`,
+            [name, description, flag, points, category],
+            function(err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+            });
+    });
+}
+
+function updateChallenge(id, name, description, flag, points, category) {
+    return new Promise((resolve, reject) => {
+        db.run(`UPDATE challenges 
+                SET name = ?, description = ?, flag = ?, points = ?, category = ?
+                WHERE id = ?`,
+            [name, description, flag, points, category, id],
+            (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+    });
+}
+
+function deleteChallenge(id) {
+    return new Promise((resolve, reject) => {
+        db.serialize(() => {
+            // Delete solved challenges first
+            db.run('DELETE FROM solved_challenges WHERE challenge_id = ?', [id]);
+            
+            // Then delete the challenge
+            db.run('DELETE FROM challenges WHERE id = ?', [id], (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+    });
+}
+
+// System settings
+function initSystemSettings() {
+    return new Promise((resolve, reject) => {
+        db.run(`CREATE TABLE IF NOT EXISTS system_settings (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            site_name TEXT DEFAULT 'VUW CTF',
+            maintenance_mode BOOLEAN DEFAULT 0,
+            registration_enabled BOOLEAN DEFAULT 1,
+            max_points_per_day INTEGER DEFAULT 1000,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`, (err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            
+            // Insert default settings if they don't exist
+            db.run(`INSERT OR IGNORE INTO system_settings (id) VALUES (1)`, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+    });
+}
+
+function getSystemSettings() {
+    return new Promise((resolve, reject) => {
+        db.get('SELECT * FROM system_settings WHERE id = 1', (err, row) => {
+            if (err) reject(err);
+            else resolve(row || {
+                site_name: 'VUW CTF',
+                maintenance_mode: false,
+                registration_enabled: true,
+                max_points_per_day: 1000
+            });
+        });
+    });
+}
+
+function updateSystemSettings(settings) {
+    return new Promise((resolve, reject) => {
+        db.run(`UPDATE system_settings 
+                SET site_name = ?,
+                    maintenance_mode = ?,
+                    registration_enabled = ?,
+                    max_points_per_day = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = 1`,
+            [settings.siteName, settings.maintenanceMode, settings.registrationEnabled, settings.maxPointsPerDay],
+            (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+    });
+}
+
+function updateUserAdminStatus(userId, isAdmin) {
+    return new Promise((resolve, reject) => {
+        db.run('UPDATE users SET isAdmin = ? WHERE id = ?',
+            [isAdmin ? 1 : 0, userId],
+            (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+    });
+}
+
+async function createFirstAdmin() {
+    return new Promise((resolve, reject) => {
+        db.get('SELECT COUNT(*) as count FROM users', async (err, row) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            
+            if (row.count === 0) {
+                try {
+                    const adminId = await createUser('vuwctf', 'vuwctf@gmail.com', 'zoU!nQxe6N');
+                    await updateUserAdminStatus(adminId, true);
+                    resolve(true);
+                } catch (error) {
+                    reject(error);
+                }
+            } else {
+                resolve(false);
+            }
+        });
+    });
+}
+
+// User challenge management
+function addUserChallenge(userId, challengeId) {
+    return new Promise((resolve, reject) => {
+        db.run(`INSERT OR IGNORE INTO solved_challenges (user_id, challenge_id) VALUES (?, ?)`,
+            [userId, challengeId],
+            (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+    });
+}
+
+function removeUserChallenge(userId, challengeId) {
+    return new Promise((resolve, reject) => {
+        db.run(`DELETE FROM solved_challenges WHERE user_id = ? AND challenge_id = ?`,
+            [userId, challengeId],
+            (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+    });
+}
+
+// Guest user functions
+async function createGuestUser() {
+    const guestUsername = `guest_${Math.random().toString(36).substring(2, 8)}`;
+    const guestEmail = `${guestUsername}@guest.local`;
+    const guestPassword = Math.random().toString(36).substring(2, 12);
+    
+    try {
+        const userId = await createUser(guestUsername, guestEmail, guestPassword);
+        return {
+            id: userId,
+            username: guestUsername,
+            email: guestEmail,
+            password: guestPassword,
+            isGuest: true
+        };
+    } catch (error) {
+        console.error('Error creating guest user:', error);
+        throw error;
+    }
+}
+
+// Verify guest user status
+function verifyGuestUser() {
+    return new Promise((resolve, reject) => {
+        db.get('SELECT * FROM users WHERE username = ? AND isGuest = 1', ['guest'], (err, row) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            if (!row) {
+                // If guest user doesn't exist or isn't marked as guest, recreate it
+                bcrypt.hash('guest123', 10).then(hashedPassword => {
+                    db.run(`INSERT OR REPLACE INTO users (username, email, password, isGuest) 
+                            VALUES (?, ?, ?, ?)`,
+                        ['guest', 'guest@vuwctf.local', hashedPassword, 1],
+                        (err) => {
+                            if (err) {
+                                reject(err);
+                                return;
+                            }
+                            resolve(true);
+                        });
+                }).catch(reject);
+            } else {
+                resolve(false);
+            }
+        });
+    });
+}
+
 // Update exports
 module.exports = {
     initDatabase,
@@ -352,7 +594,9 @@ module.exports = {
     updateUserInfo,
     updateUserPassword,
     updateUserLastLogin,
+    updateUserAdminStatus,
     deleteUser,
+    createFirstAdmin,
     getChallenges,
     getChallengeById,
     getSolvedChallenges,
@@ -361,5 +605,16 @@ module.exports = {
     updateUserPoints,
     getUserStreak,
     getTotalChallenges,
-    getAvailableCategories
-}; 
+    getAvailableCategories,
+    clearUserSolves,
+    createChallenge,
+    updateChallenge,
+    deleteChallenge,
+    initSystemSettings,
+    getSystemSettings,
+    updateSystemSettings,
+    addUserChallenge,
+    removeUserChallenge,
+    createGuestUser,
+    verifyGuestUser
+};

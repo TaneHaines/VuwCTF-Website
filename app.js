@@ -16,10 +16,27 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Initialize database
-db.initDatabase().catch(err => {
-    console.error('Database initialization error:', err);
-    process.exit(1);
-});
+db.initDatabase()
+    .then(() => {
+        console.log('Database initialized');
+        return Promise.all([
+            db.createFirstAdmin(),
+            db.initSystemSettings(),
+            db.verifyGuestUser()
+        ]);
+    })
+    .then(([adminCreated, _, guestCreated]) => {
+        if (adminCreated) {
+            console.log('First admin user created');
+        }
+        if (guestCreated) {
+            console.log('Guest user created/updated');
+        }
+        console.log('System settings initialized');
+    })
+    .catch(err => {
+        console.error('Database initialization error:', err);
+    });
 
 // Load challenges from files
 const challenges = loadChallenges();
@@ -103,6 +120,20 @@ app.use((req, res, next) => {
   next();
 });
 
+// Helper function for challenge category badge colors
+app.locals.getBadgeColor = function(category) {
+    const colors = {
+        'Web': 'primary',
+        'Crypto': 'success',
+        'OSINT': 'info',
+        'Stego': 'warning',
+        'Forensics': 'danger',
+        'Reverse': 'secondary',
+        'Binary': 'dark'
+    };
+    return colors[category] || 'secondary';
+};
+
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -113,6 +144,15 @@ const isAuthenticated = (req, res, next) => {
   }
   req.flash('error_msg', 'Please log in to access this page');
   res.redirect('/login');
+};
+
+// Admin middleware
+const isAdmin = (req, res, next) => {
+    if (req.session.user && req.session.user.isAdmin) {
+        return next();
+    }
+    req.flash('error_msg', 'You do not have permission to access this page');
+    res.redirect('/');
 };
 
 // Routes
@@ -363,17 +403,16 @@ app.get('/scoreboard', isAuthenticated, async (req, res) => {
         }
 
         res.render('scoreboard', {
-            title: 'Scoreboard',
+            title: 'Scoreboard | VUW CTF',
             activePage: 'scoreboard',
-            user: req.user,
-            currentUser: req.session.user || null,
+            currentUser: req.session.user,
             leaderboard,
             totalChallenges,
             categoryLeaderboards
         });
     } catch (error) {
         console.error('Error loading scoreboard:', error);
-        req.flash('error', 'Error loading scoreboard. Please try again later.');
+        req.flash('error_msg', 'Error loading scoreboard. Please try again later.');
         res.redirect('/');
     }
 });
@@ -385,7 +424,8 @@ app.get('/login', (req, res) => {
   }
   res.render('login', {
     title: 'Login | VUW CTF',
-    activePage: 'login'
+    activePage: 'login',
+    showGuestLogin: false
   });
 });
 
@@ -408,7 +448,9 @@ app.post('/login', async (req, res) => {
       req.session.user = {
         id: user.id,
         username: user.username,
-        points: user.points || 0
+        points: user.points || 0,
+        isAdmin: user.isAdmin || false,
+        isGuest: user.isGuest || false
       };
       req.flash('success_msg', 'You are now logged in');
       return res.redirect('/challenges');
@@ -774,6 +816,251 @@ app.get('/instructions', (req, res) => {
     title: 'Getting Started | VUW CTF',
     activePage: 'instructions'
   });
+});
+
+// Admin routes
+app.get('/admin', isAdmin, async (req, res) => {
+    try {
+        const users = await db.getAllUsers();
+        const challenges = await db.getChallenges();
+        const systemSettings = await db.getSystemSettings();
+
+        res.render('admin/dashboard', {
+            title: 'Admin Dashboard | VUW CTF',
+            activePage: 'admin',
+            users,
+            challenges,
+            systemSettings
+        });
+    } catch (error) {
+        console.error('Admin dashboard error:', error);
+        req.flash('error_msg', 'Error loading admin dashboard');
+        res.redirect('/');
+    }
+});
+
+// Admin users routes
+app.get('/admin/users', isAdmin, async (req, res) => {
+    try {
+        const users = await db.getAllUsers();
+        const challenges = await db.getChallenges();
+        
+        // Get solved challenges for each user
+        const usersWithChallenges = await Promise.all(users.map(async user => {
+            const solvedChallenges = await db.getSolvedChallenges(user.id);
+            return {
+                ...user,
+                solvedChallenges
+            };
+        }));
+
+        res.render('admin/users', {
+            title: 'User Management | VUW CTF',
+            activePage: 'admin',
+            users: usersWithChallenges,
+            challenges
+        });
+    } catch (error) {
+        console.error('Admin users error:', error);
+        req.flash('error_msg', 'Error loading users');
+        res.redirect('/admin');
+    }
+});
+
+app.post('/admin/users/:id/delete', isAdmin, async (req, res) => {
+    try {
+        await db.deleteUser(req.params.id);
+        req.flash('success_msg', 'User deleted successfully');
+    } catch (error) {
+        console.error('Delete user error:', error);
+        req.flash('error_msg', 'Error deleting user');
+    }
+    res.redirect('/admin/users');
+});
+
+app.post('/admin/users/:id/set-admin', isAdmin, async (req, res) => {
+    try {
+        await db.updateUserAdminStatus(req.params.id, true);
+        req.flash('success_msg', 'User has been set as admin');
+    } catch (error) {
+        console.error('Set admin error:', error);
+        req.flash('error_msg', 'Error setting user as admin');
+    }
+    res.redirect('/admin/users');
+});
+
+app.post('/admin/users/:id/remove-admin', isAdmin, async (req, res) => {
+    try {
+        await db.updateUserAdminStatus(req.params.id, false);
+        req.flash('success_msg', 'Admin privileges have been removed');
+    } catch (error) {
+        console.error('Remove admin error:', error);
+        req.flash('error_msg', 'Error removing admin privileges');
+    }
+    res.redirect('/admin/users');
+});
+
+// Admin user challenge management routes
+app.post('/admin/users/:id/challenges/:challengeId/add', isAdmin, async (req, res) => {
+    try {
+        await db.addUserChallenge(req.params.id, req.params.challengeId);
+        req.flash('success_msg', 'Challenge added to user');
+    } catch (error) {
+        console.error('Add user challenge error:', error);
+        req.flash('error_msg', 'Error adding challenge to user');
+    }
+    res.redirect('/admin/users');
+});
+
+app.post('/admin/users/:id/challenges/:challengeId/remove', isAdmin, async (req, res) => {
+    try {
+        await db.removeUserChallenge(req.params.id, req.params.challengeId);
+        req.flash('success_msg', 'Challenge removed from user');
+    } catch (error) {
+        console.error('Remove user challenge error:', error);
+        req.flash('error_msg', 'Error removing challenge from user');
+    }
+    res.redirect('/admin/users');
+});
+
+// Admin challenges routes
+app.get('/admin/challenges', isAdmin, async (req, res) => {
+    try {
+        const challenges = await db.getChallenges();
+        res.render('admin/challenges', {
+            title: 'Challenge Management | VUW CTF',
+            activePage: 'admin',
+            challenges
+        });
+    } catch (error) {
+        console.error('Admin challenges error:', error);
+        req.flash('error_msg', 'Error loading challenges');
+        res.redirect('/admin');
+    }
+});
+
+app.post('/admin/challenges/create', isAdmin, async (req, res) => {
+    try {
+        const { name, description, flag, points, category } = req.body;
+        await db.createChallenge({ name, description, flag, points, category });
+        req.flash('success_msg', 'Challenge created successfully');
+    } catch (error) {
+        console.error('Create challenge error:', error);
+        req.flash('error_msg', 'Error creating challenge');
+    }
+    res.redirect('/admin/challenges');
+});
+
+app.post('/admin/challenges/:id/update', isAdmin, async (req, res) => {
+    try {
+        const { name, description, flag, points, category } = req.body;
+        await db.updateChallenge(req.params.id, { name, description, flag, points, category });
+        req.flash('success_msg', 'Challenge updated successfully');
+    } catch (error) {
+        console.error('Update challenge error:', error);
+        req.flash('error_msg', 'Error updating challenge');
+    }
+    res.redirect('/admin/challenges');
+});
+
+app.post('/admin/challenges/:id/delete', isAdmin, async (req, res) => {
+    try {
+        await db.deleteChallenge(req.params.id);
+        req.flash('success_msg', 'Challenge deleted successfully');
+    } catch (error) {
+        console.error('Delete challenge error:', error);
+        req.flash('error_msg', 'Error deleting challenge');
+    }
+    res.redirect('/admin/challenges');
+});
+
+// Admin settings routes
+app.get('/admin/settings', isAdmin, async (req, res) => {
+    try {
+        const settings = await db.getSystemSettings();
+        res.render('admin/settings', {
+            title: 'System Settings | VUW CTF',
+            activePage: 'admin',
+            settings
+        });
+    } catch (error) {
+        console.error('Admin settings error:', error);
+        req.flash('error_msg', 'Error loading settings');
+        res.redirect('/admin');
+    }
+});
+
+app.post('/admin/settings/update', isAdmin, async (req, res) => {
+    try {
+        const { siteName, maintenanceMode, registrationEnabled, maxPointsPerDay } = req.body;
+        await db.updateSystemSettings({
+            siteName,
+            maintenanceMode: maintenanceMode === 'on',
+            registrationEnabled: registrationEnabled === 'on',
+            maxPointsPerDay: parseInt(maxPointsPerDay)
+        });
+        req.flash('success_msg', 'Settings updated successfully');
+    } catch (error) {
+        console.error('Settings update error:', error);
+        req.flash('error_msg', 'Error updating settings');
+    }
+    res.redirect('/admin/settings');
+});
+
+// Guest user routes
+app.get('/guest-login', async (req, res) => {
+    try {
+        // Create a new guest user
+        const guestUser = await db.createGuestUser();
+        
+        // Create session
+        req.session.user = {
+            id: guestUser.id,
+            username: guestUser.username,
+            points: 0,
+            isAdmin: false,
+            isGuest: true
+        };
+        
+        req.flash('success_msg', 'Welcome! You are now logged in as a guest user.');
+        res.redirect('/challenges');
+    } catch (error) {
+        console.error('Guest login error:', error);
+        req.flash('error_msg', 'Error creating guest account');
+        res.redirect('/login');
+    }
+});
+
+// Reset guest progress route
+app.post('/reset-guest-progress', isAuthenticated, async (req, res) => {
+    try {
+        // Only allow guest users to reset their progress
+        if (!req.session.user.isGuest) {
+            req.flash('error_msg', 'Only guest users can reset their progress');
+            return res.redirect('/profile');
+        }
+
+        // Clear all solved challenges for the guest user
+        await db.clearUserSolves(req.session.user.id);
+        
+        // Reset points to 0
+        await db.updateUserPoints(req.session.user.id, -req.session.user.points);
+        
+        // Update session
+        req.session.user.points = 0;
+        
+        req.flash('success_msg', 'Your progress has been reset');
+        res.redirect('/profile');
+    } catch (error) {
+        console.error('Reset progress error:', error);
+        req.flash('error_msg', 'Error resetting progress');
+        res.redirect('/profile');
+    }
+});
+
+// Catch-all route for non-existent URLs
+app.use((req, res) => {
+    res.redirect('/');
 });
 
 // Start server
